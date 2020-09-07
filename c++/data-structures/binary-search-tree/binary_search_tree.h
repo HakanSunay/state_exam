@@ -72,10 +72,73 @@ public:
         _insert(toBeInserted, root);
     }
 
-    // TODO:
+    // TODO: A recursive solution might be better fitting here
     void Remove(const T& data) {
-        // will remove first occurrence only
+        Node<T>* father = root;
+        Node<T>* current = root;
+        while (current->data != data) {
+            father = current;
+            if (data < current->data) {
+                current = current->left;
+            } else if (data > current->data) {
+                current = current->right;
+            }
+        }
 
+        // Current is leaf
+        if (current->left == nullptr && current -> right == nullptr) {
+            if (current == root) {
+                delete root;
+                root = nullptr;
+                return;
+            } else if (current->data < father->data) {
+                // current node is left child
+                father->left = nullptr;
+            } else {
+                // current node is right child
+                father->right = nullptr;
+            }
+
+            delete current;
+            return;
+        }
+
+        // Current has 1 child only
+        // No need to XOR, previous case will handle both being nullptr
+        if (current->left == nullptr || current->right == nullptr) {
+            if (current->left == nullptr) {
+                // current node has right child only
+                // updating value depending on current node's left/right child relation to its father
+                current->data < father->data ? father->left = current->right : father->right = current->right;
+            } else {
+                // current node has left child only
+                // updating value depending on current node's left/right child relation to its father
+                current->data < father->data ? father->left = current->left : father->right = current->left;
+            }
+
+            delete current;
+            return;
+        }
+
+        // Current has 2 children, must find its highest element in left subtree
+        Node<T>* lowerIter = current->left;
+        Node<T>* lowerIterFather = current;
+        while (lowerIter->right != nullptr) {
+            lowerIterFather = lowerIter;
+            lowerIter = lowerIter->right;
+        }
+
+        // replace highest leftree subtree element with current
+        T newData = lowerIter -> data;
+        delete lowerIter;
+
+        if (lowerIterFather->data > newData) {
+            lowerIterFather->left = nullptr;
+        } else {
+            lowerIterFather->right = nullptr;
+        }
+
+        current->data=newData;
     }
 
     T Min() {
